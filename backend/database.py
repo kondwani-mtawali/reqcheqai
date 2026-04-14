@@ -9,7 +9,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 
 from models import RequirementAnalysis # Imports the model
 
-from main import app
+#from main import app
 
 # ------------------------------------------------------------------------------
 # Engine: holds the connections to the DB. Only one engine boject exists per DB
@@ -34,15 +34,11 @@ SessionDep = Annotated[Session, Depends(get_session)]
 """
 Database Functions Below. Written using FastAPI SQL(Relational) Databases Docs
 """
-# On application start, create the DB
-@app.on_event("startup")
-def on_startup():
-    create_db_and_tables()
+
 
 # Writes a requirement report to DB
 # Same annotations as Pydantic model
 # Session dependency used to add new reqcheq to the Session instance
-#@app.post("/reqcheqs/")
 def create_report(reqcheq: RequirementAnalysis, session: Session = Depends(get_session)) -> RequirementAnalysis:
     session.add(reqcheq)
     session.commit()
@@ -50,7 +46,6 @@ def create_report(reqcheq: RequirementAnalysis, session: Session = Depends(get_s
     return reqcheq
 
 # Gets all the requirement reports in DB
-#@app.get("/reqcheqs/")
 def read_reports(
     session: Session = Depends(get_session),
     offset: int = 0,
@@ -60,14 +55,12 @@ def read_reports(
     return reqcheqs
 
 # Gets a single requirement report from DB
-#@app.get("/reqcheqs/{reqcheq_id}")
 def read_report(reqcheq_id: int, session: Session = Depends(get_session)) -> RequirementAnalysis:
     reqcheq = session.get(RequirementAnalysis, reqcheq_id)
     if not reqcheq:
         raise HTTPException(status_code=404, detail="Requirement Analysis Not Found")
 
 # Deletes specified requirement report 
-#@app.delete("/reqcheqs/{reqcheq_id}")
 def delete_report(reqcheq_id: int, session: Session = Depends(get_session)):
     reqcheq = session.get(RequirementAnalysis, reqcheq_id)
     if not reqcheq:
