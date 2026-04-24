@@ -1,0 +1,64 @@
+/* Custom module CSS for the input component.
+Author(s): Kondwani & Grant
+Change Log:
+Date Created: 04/23/2026
+Lasted Editied: 4/24/2026
+*/
+/* Warm Color Schemas: 
+Burnt Orange/Terracota (Light Accent Color) --> E8651A
+(Light Web Page Background) --> 
+Amber/Golden (Dark Accent Color) --> #F5A623
+Deep Safron (Dark Accent Color) --> #FF9933
+Warm Grey (Dark Web Page Background) --> #2B2521
+
+
+
+
+/* Utilize Vite CSS Modules for specific styling/ */
+
+.page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Subtract the headers height so that the input box stays centered even with the header. */
+    min-height: calc(100vh - 120px);
+}
+
+/* Container around the input box. */
+.inputContainer {
+    display: flex;
+    /* Text box on top with button underneath. */
+    flex-direction: column;
+    align-items: center;
+    min-width: 500px;
+    min-height: 50px;
+    /* The gap between text box and submit button */
+    gap: 10px;
+    resize: none;
+    /* The actual input box. */
+    width: 75%;
+    /* Padding for directions of the input box. Format (T, B, L, R) */
+    padding: 5px 5px 5px 5px;
+    outline: none;
+    overflow: auto;
+    /* Add a rounded edge to the input box. */
+    border-radius: 8px;
+    transition: border-color 0.3s;
+    /* Text Color */
+    color: #000000;
+}
+
+.inputContainer:focus {
+    border-color: #E8651A;
+    border-width: 2px;
+}
+
+
+.inputContainer::placeholder {
+    font-family: sans-serif;
+    font-style: italic;
+    font-size: 16px;
+    color: rgb(152, 152, 153);
+    /* Controls the placeholder text position */
+    padding: 0px;
+}
