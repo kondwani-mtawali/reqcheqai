@@ -1,0 +1,22 @@
+/* This css file is used for the styling. */
+/*
+Change Log:
+Last Editited: 4/24/2026 
+*/
+
+
+
+/* White Web Page Background */
+/* Define it in root so it can be easily accessed by other CSS files. */
+:root {
+  /* Listed in variable format so, specifically, header pulls the background color from this variable. */
+  background: #f5f0eb;
+  font-family: Inter, sans-serif;
+  font-feature-settings: 'liga' 1, 'calt' 1;
+}
+
+@supports (font-variation-settings: normal) {
+  :root {
+    font-family: InterVariable, sans-serif;
+  }
+}

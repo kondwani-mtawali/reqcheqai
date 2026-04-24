@@ -1,6 +1,7 @@
 """
 main.py: Application entry point that creates the application
 """
+
 import json
 from dotenv import load_dotenv
 import json
@@ -10,24 +11,29 @@ from pydantic import BaseModel
 from openai import OpenAI
 from database import create_db_and_tables
 
-app = FastAPI() # App initialization
-env_variable = load_dotenv() # Loads environment variable
-client = OpenAI() # Initializes openAI client
+app = FastAPI()  # App initialization
+env_variable = load_dotenv()  # Loads environment variable
+client = OpenAI()  # Initializes openAI client
 
-@app.on_event("startup") # Initializes DB on start up
+
+@app.on_event("startup")  # Initializes DB on start up
 def on_startup():
     create_db_and_tables()
+
 
 class UserRequirement(BaseModel):
     requirement: str
 
+
 # Validates LLM Report as JSON, returns an integer
 class JsonReport(BaseModel):
-    report: dict # Returned as JSON by LLM, passed in as dict in function call
+    report: dict  # Returned as JSON by LLM, passed in as dict in function call
     req_score: int
 
 
-@app.post("/analyze", response_model=JsonReport) # <--- Analyze Endpoint(POST Method), JSON Report = Output/Response Endpoint Expects 
+@app.post(
+    "/analyze", response_model=JsonReport
+)  # <--- Analyze Endpoint(POST Method), JSON Report = Output/Response Endpoint Expects
 def report_generation(request: UserRequirement):
     # Prompt Engineering
     prompt = f""" 
@@ -65,8 +71,8 @@ def report_generation(request: UserRequirement):
     {request.requirement}
     """
 
-    response = client.responses.create(model = "gpt-4o-mini", input = prompt) 
-    
+    response = client.responses.create(model="gpt-4o-mini", input=prompt)
+
     # Tries loading JSON data
     try:
         report_dict = json.loads(response.output_text)
@@ -74,7 +80,7 @@ def report_generation(request: UserRequirement):
     except json.JSONDecodeError:
         return {
             "error": "LLM returned invalid JSON",
-            "raw_output": response.output_text
+            "raw_output": response.output_text,
         }
     
     req_score = overall_score(report_dict)
@@ -84,35 +90,35 @@ def report_generation(request: UserRequirement):
 
 
 # Add a function to generate an overall score based on LLM generations
-def overall_score(report: dict) -> int: 
+def overall_score(report: dict) -> int:
     req_score = 0
 
-    #Attribute 20 points for present functional portion
+    # Attribute 20 points for present functional portion
     if report.get("functional_portion") != "N/A":
-        req_score +=20
-    
+        req_score += 20
+
     # Attribute 20 points for present non-function portion
     if report.get("non_functional_portion") != "N/A":
-        req_score +=20
-    
+        req_score += 20
+
     # Attribute 10 points for high ambiguity
     if report.get("ambiguity_level") == "High":
-        req_score +=10
-    
+        req_score += 10
+
     # Attribute 20 points for medium ambiguity
     elif report.get("ambiguity_level") == "Medium":
-        req_score +=20
+        req_score += 20
 
     # Attribute 30 points for low ambiguity
     elif report.get("ambiguity_level") == "Low":
-        req_score +=30
-        
+        req_score += 30
+
     # Attribute 30 points for requirement written in active voice
     if report.get("active_voice") == "Yes":
-        req_score +=30
-    
+        req_score += 30
+
     # Attribute 15 points for requirement lacking active voice structure
     elif report.get("active_voice") == "No":
-        req_score +=15
-    
+        req_score += 15
+
     return req_score

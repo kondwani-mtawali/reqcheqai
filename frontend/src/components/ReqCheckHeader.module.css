@@ -1,0 +1,30 @@
+/* 
+ReqCheckHeader.module.css
+Author(s): Kondwani & Grant 
+Change Log:
+Date Created: 4/23/2026
+Last Edited: 4/24/2026
+*/
+
+.header {
+    display: flex;
+    /* Pushes the title to the left and the Nav Pages to the right. */
+    justify-content: space-between;
+    /* Align vertically */
+    align-items: center;
+    width: 100%;
+    height: 60px;
+    padding: 16px 24px;
+    background-color: #f5f0eb;
+}
+
+.title {
+    color: black;
+    font-size: 60px;
+    /* Font weight = 700 --> Bold */
+    font-weight: 500;
+    font-size: xx-large;
+    font-style: italic;
+    margin: 0;
+    letter-spacing: 5px;
+}
