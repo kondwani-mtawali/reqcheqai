@@ -10,3 +10,4 @@ class RequirementAnalysis(SQLModel, table=True):
     report: str = Field(index = True)
     req_score: int = Field(default=None, index=True)
 # --------------------------------------------------------------------------------------
+

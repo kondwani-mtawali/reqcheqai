@@ -12,7 +12,7 @@ from models import RequirementAnalysis # Imports the model
 #from main import app
 
 # ------------------------------------------------------------------------------
-# Engine: holds the connections to the DB. Only one engine boject exists per DB
+# Engine: holds the connections to the DB. Only one engine object exists per DB
 sqlite_file_name = "database.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 connect_args = {"check_same_thread": False}
@@ -37,17 +37,15 @@ Database Functions Below. Written using FastAPI SQL(Relational) Databases Docs
 
 
 # Writes a requirement report to DB
-# Same annotations as Pydantic model
-# Session dependency used to add new reqcheq to the Session instance
-def create_report(reqcheq: RequirementAnalysis, session: Session = Depends(get_session)) -> RequirementAnalysis:
-    session.add(reqcheq)
-    session.commit()
-    session.refresh(reqcheq)
-    return reqcheq
+def create_report(reqcheq: RequirementAnalysis, session: Session) -> RequirementAnalysis:
+     #session.add(reqcheq)
+     #session.commit()
+     #session.refresh(reqcheq)
+     return reqcheq
 
 # Gets all the requirement reports in DB
 def read_reports(
-    session: Session = Depends(get_session),
+    session: Session,
     offset: int = 0,
     limit: int = Query(default=100, le=100),
 ) -> list[RequirementAnalysis]:
@@ -55,13 +53,13 @@ def read_reports(
     return reqcheqs
 
 # Gets a single requirement report from DB
-def read_report(reqcheq_id: int, session: Session = Depends(get_session)) -> RequirementAnalysis:
+def read_report(reqcheq_id: int, session: Session) -> RequirementAnalysis:
     reqcheq = session.get(RequirementAnalysis, reqcheq_id)
     if not reqcheq:
         raise HTTPException(status_code=404, detail="Requirement Analysis Not Found")
 
 # Deletes specified requirement report 
-def delete_report(reqcheq_id: int, session: Session = Depends(get_session)):
+def delete_report(reqcheq_id: int, session: Session):
     reqcheq = session.get(RequirementAnalysis, reqcheq_id)
     if not reqcheq:
         raise HTTPException(status_code=404, detail="Requirement Analysis Not Found")

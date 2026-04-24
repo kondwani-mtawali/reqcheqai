@@ -69,7 +69,7 @@ def report_generation(request: UserRequirement):
     
     # Tries loading JSON data
     try:
-        report = json.loads(response.output_text)
+        report_dict = json.loads(response.output_text)
     # Outputs LLM response if not JSON
     except json.JSONDecodeError:
         return {
@@ -77,9 +77,9 @@ def report_generation(request: UserRequirement):
             "raw_output": response.output_text
         }
     
-    req_score = overall_score(report)
+    req_score = overall_score(report_dict)
     
-    return {"report": report, 
+    return {"report": report_dict, 
             "req_score": req_score}
 
 
