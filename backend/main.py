@@ -3,16 +3,38 @@ main.py: Application entry point that creates the application
 """
 
 import json
-from dotenv import load_dotenv
-import json
+import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
 from openai import OpenAI
 from database import create_db_and_tables
+from fastapi.middleware.cors import CORSMiddleware
+
+# Load environment variables FIRST
+load_dotenv()
 
 app = FastAPI()  # App initialization
-env_variable = load_dotenv()  # Loads environment variable
+
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Read the API Key (after loading .env)
+api_key = os.getenv("OPENAI_API_KEY")
+
+# Debug statement to make sure the key is actually being loaded.
+# REMOVE BEFORE PUSH
+print(f"DEBUG: API Key loaded: {api_key is not None}")
+print(f"DEBUG: API Key value (first 20 chars): {api_key[:20] if api_key else 'None'}")
 client = OpenAI()  # Initializes openAI client
 
 
@@ -71,22 +93,23 @@ def report_generation(request: UserRequirement):
     {request.requirement}
     """
 
-    response = client.responses.create(model="gpt-4o-mini", input=prompt)
+    response = client.chat.completions.create(
+        model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}]
+    )
 
     # Tries loading JSON data
     try:
-        report_dict = json.loads(response.output_text)
+        report_dict = json.loads(response.choices[0].message.content)
     # Outputs LLM response if not JSON
     except json.JSONDecodeError:
         return {
             "error": "LLM returned invalid JSON",
-            "raw_output": response.output_text,
+            "raw_output": response.choices[0].message.content,
         }
-    
+
     req_score = overall_score(report_dict)
-    
-    return {"report": report_dict, 
-            "req_score": req_score}
+
+    return {"report": report_dict, "req_score": req_score}
 
 
 # Add a function to generate an overall score based on LLM generations

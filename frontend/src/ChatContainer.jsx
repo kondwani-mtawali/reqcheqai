@@ -2,7 +2,7 @@
 Author(s) : Kondwani & Grant
 Change Log:
 Date Created: 04/12/2026
-Last Edited: 4/24/2026
+Last Edited: 4/25/2026
 */}
 
 import { useState } from "react";
@@ -10,15 +10,24 @@ import styles from './ChatContainer.module.css'
 
 export default function ChatContainer() {
     const [inputValue, setInputValue] = useState("")
+    // Report
+    // DON'T TOUCH:
+    // Don't know why it crashes when you remove response or report.
+    // Will need to be looked at, but don't touch.
     const [response, setResponse] = useState("")
+    const [report, setReport] = useState("")
+    const [score, setScore] = useState("")
     const [isLoading, setIsLoading] = useState(false)
 
     async function submitHandle() {
-        // For DevTools, shows the button is actually registering a button click when pressed.
+        // For DevTools + Manual Testing, shows the button is actually registering a button click when pressed.
         console.log("Button clicked")
         if (!inputValue.trim()) return
         setIsLoading(true)
         setResponse("")
+        setReport("")
+        setScore("")
+
 
         try {
 
@@ -36,7 +45,12 @@ export default function ChatContainer() {
             })
 
             const data = await res.json()
-            setResponse(JSON.stringify(data.report, null, 2))
+            // Logging the data to ensure that there is data in the fields.
+            console.log(data)
+            setResponse(data.response)
+            setReport(data.report)
+            setScore(data.req_score)
+
         } catch (error) {
 
             // Log the error for testing/debugging purposes.
@@ -64,11 +78,17 @@ export default function ChatContainer() {
                 </div>
                 {/* Display the response if there is one. */}
                 {/*  If there is no input = no response. */}
-                {response && <p>{response}</p>}
+                {report && (
+                    <div>
+                        <p>Functional: {report.functional_portion}</p>
+                        <p>Non Functional: {report.non_functional_portion}</p>
+                        <p>Ambiguity Level: {report.ambiguity_level}</p>
+                        <p>Active Voice: {report.active_voice}</p>
+                        <p>Score: {score}</p>
+                    </div>
+                )}
+
             </div>
         </div>
     )
 }
-
-
-
