@@ -8,6 +8,10 @@ class RequirementAnalysis(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     user_req: str = Field(index = True)
     report: str = Field(index = True)
+    atomicity_score: int = Field(default=None, index = True)
+    measurability_score: int = Field(default=None, index = True)
+    complexity_score: int = Field(default=None, index = True)
+    readability_score: int = Field(default=None, index = True)
     req_score: int = Field(default=None, index=True)
 # --------------------------------------------------------------------------------------
 

@@ -19,7 +19,7 @@ connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, connect_args=connect_args)
 # ------------------------------------------------------------------------------
 
-# Function that creates the tables for the table model above
+# Function that creates the table based on the models
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
@@ -35,19 +35,18 @@ SessionDep = Annotated[Session, Depends(get_session)]
 Database Functions Below. Written using FastAPI SQL(Relational) Databases Docs
 """
 
-
 # Writes a requirement report to DB
 def create_report(reqcheq: RequirementAnalysis, session: Session) -> RequirementAnalysis:
-     #session.add(reqcheq)
-     #session.commit()
-     #session.refresh(reqcheq)
+     session.add(reqcheq)
+     session.commit()
+     session.refresh(reqcheq)
      return reqcheq
 
 # Gets all the requirement reports in DB
-def read_reports(
+def read_all_reports(
     session: Session,
-    offset: int = 0,
-    limit: int = Query(default=100, le=100),
+    offset: int = 0, # number of reports to skip
+    limit: int = 100, # Set limit to 100 reports returned
 ) -> list[RequirementAnalysis]:
     reqcheqs = session.exec(select(RequirementAnalysis).offset(offset).limit(limit)).all() # offset and limits paginate results
     return reqcheqs
@@ -57,6 +56,7 @@ def read_report(reqcheq_id: int, session: Session) -> RequirementAnalysis:
     reqcheq = session.get(RequirementAnalysis, reqcheq_id)
     if not reqcheq:
         raise HTTPException(status_code=404, detail="Requirement Analysis Not Found")
+    return reqcheq
 
 # Deletes specified requirement report 
 def delete_report(reqcheq_id: int, session: Session):
