@@ -30,20 +30,7 @@ app.add_middleware(
 @app.on_event("startup")  # Initializes DB on start up
 def on_startup():
     create_db_and_tables()
-    # Uncomment Below code if changes made to model
-    # # === Add this to update schema ===
-    # from sqlalchemy import text
-    
-    # session = next(get_session())
-    # try:
-    #     # Drop the table and recreate it 
-    #     session.exec(text("DROP TABLE IF EXISTS requirementanalysis"))
-    #     session.commit()
-        
-    #     create_db_and_tables()   # recreate with new columns
-    #     print(" Database table recreated with new fields")
-    # finally:
-    #     session.close()
+
 
 class UserRequirement(BaseModel):
     requirement: str
@@ -148,7 +135,10 @@ def report_generation(request: UserRequirement):
     """
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini", messages=[{"role": "user", "content": prompt}]
+        model="gpt-4o-mini", 
+        messages=[{"role": "user", "content": prompt}], 
+        temperature=0.0, 
+        response_format={"type": "json_object" }
     )
 
     # Tries loading JSON data
@@ -377,7 +367,7 @@ class LLMFeedback(BaseModel):
 @app.post("/feedback")
 def llm_feedback(data: LLMFeedback):
     """Generates feedback and suggest requirement changes to the user"""
-    
+
     # Retrieve the req_cheq using read_report
     session_gen = get_session()
     session = next(session_gen)
@@ -407,14 +397,44 @@ def llm_feedback(data: LLMFeedback):
     - The readability score(out of 100) given to the requirement: {saved_report.readability_score}
     - The overall requirement score given to the requirement: {saved_report.req_score}   
 
-    - Generate/Output the following in plaintext format:
-    1) Begin with a simple disclaimer that this is an AI generated analysis
-    2) Provide constructive feedback on the requirement, taking into consideration the breakdown provided in the report
-    3) Suggest changes the user should make to the requirement in order to fix it
+    - Generate/Output the following in JSON format. ONLY in JSON format as specified. Do not include explanations or extra text. Do not use code fences
+    1) Begin with a short/minimal disclaimer that this is an AI generated analysis
+    2) Provide general constructive feedback on the requirement, limit to 200 words
+    3) Explain what is good about the software requirement, limit to 200 words
+    4) Explain what was done poorly about the software requirements, limit to 200 words
+    5) Suggest changes the user should make to the requirement in order to fix it, limit to 200 words
+    6) Provide the user with an improved version of their originally inputted software requirement, limit to 200 words
+    
+    OUTPUT FORMAT:
+    {{
+        "disclaimer:" "AI Generated Feedback
+        "feedback:" "provide general constructive feedback, limit to 200 words",
+        "requirement_strengths": "speak about what the requirement does well, limit to 200 words",
+        "requirement_weaknesses": "speak about what the requirement does poorly, limit to 200 words",
+        "suggestions:" "walk over suggestions the user could make to improve their requirement, limit to 200 words",
+        "improved_version": "Revise and rewrite an improved version of the software reuirement, keep it atomic",
+    }}
+    
     """
-    response = client.responses.create(model="gpt-4o-mini", input=prompt)
+    response = client.chat.completions.create(
+        model="gpt-4o-mini", 
+        messages=[{"role": "user", "content": prompt}], 
+        temperature=0.0, 
+        response_format={"type": "json_object" }
+    )
 
-    return response
+    # Tries loading JSON data
+    try:
+        feedback_dict = json.loads(response.choices[0].message.content)
+        print(feedback_dict)
+    # Outputs LLM response if not JSON
+    except json.JSONDecodeError:
+        return {
+            "error": "LLM returned invalid JSON",
+            "raw_output": response.choices[0].message.content,
+        }
+
+    return feedback_dict
 
 
 
