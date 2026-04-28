@@ -12,7 +12,7 @@ import styles from './ReqCheckHeader.module.css'
 function ReqCheckHeader() {
     return (
         <header className={styles.header}>
-            <div className={styles.title}>ReqCheck</div>
+            <div className={styles.title}>ReqCheckAI</div>
         </header >
     );
 };
