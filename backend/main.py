@@ -133,6 +133,7 @@ def report_generation(request: UserRequirement):
     Requirement:
     {request.requirement}
     """
+    # GREEN TEXT ABOVE = END OF PROMPT
 
     response = client.chat.completions.create(
         model="gpt-4o-mini", 
@@ -141,7 +142,8 @@ def report_generation(request: UserRequirement):
         response_format={"type": "json_object" }
     )
 
-    # Tries loading JSON data
+    # Step 1: Convert the JSON formatted string into a python dict
+    # In our pydantic model: the report is a dict
     try:
         report_dict = json.loads(response.choices[0].message.content)
     # Outputs LLM response if not JSON
@@ -151,12 +153,13 @@ def report_generation(request: UserRequirement):
             "raw_output": response.choices[0].message.content,
         }
     
+    # The methods that compute scores are given the requirement
     atomicity = atomicity_score(request.requirement)
     measurability = measurability_score(request.requirement)
     complexity = complexity_score(request.requirement)
     readability = readability_score(request.requirement)
 
-    # Computes the requirement overall
+    # The overall score is computed based on the report(python dict) & all the computed score
     req_score = overall_score(report_dict, atomicity, measurability, complexity, readability)
 
     """
@@ -165,6 +168,8 @@ def report_generation(request: UserRequirement):
     - Initialize the session being worked on
     - Create the report(save to the database)
     """
+
+    # 
     reqcheq = RequirementAnalysis(user_req=request.requirement, report=json.dumps(report_dict), 
                                   atomicity_score=atomicity, measurability_score=measurability,
                                   complexity_score=complexity, readability_score=readability, req_score=req_score )
